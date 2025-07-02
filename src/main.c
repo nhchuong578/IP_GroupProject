@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "tags.h"
 
 #define MAX_EXPENSES 100
-#define MAX_CATEGORY 30
 #define MAX_NOTE 100
-#define MAX_TAGS 20
 
 typedef struct {
     char date[11];      // Format: YYYY-MM-DD
@@ -15,105 +14,24 @@ typedef struct {
 } Expense;
 
 Expense expenses[MAX_EXPENSES];
-int count = 0;
-char predefinedTags[MAX_TAGS][MAX_CATEGORY];
-int tagCount = 0;
+
 
 int compareDates(const void *a, const void *b) {
-    return strcmp(((Expense *)a)->date, ((Expense *)b)->date);
+    return strcmp(((Expense *)a)->date, ((Expense *)b)->date);      // sorting function
 }
-
-int findCategoryIndex(char categories[][MAX_CATEGORY], int catCount, char *target) {
+int count = 0;
+int tagCount = 0;
+//tags = categories
+int findCategoryIndex(char (*categories)[MAX_CATEGORY], int catCount, char *target) {
     for (int i = 0; i < catCount; i++) {
         if (strcmp(categories[i], target) == 0) {
             return i;
         }
     }
     return -1;
-}
+} //
 
-void saveTags() {
-    FILE *fp = fopen("tags.txt", "w");
-    if (!fp) return;
-    for (int i = 0; i < tagCount; i++) {
-        fprintf(fp, "%s\n", predefinedTags[i]);
-    }
-    fclose(fp);
-}
-
-void loadTags() {
-    FILE *fp = fopen("tags.txt", "r");
-    if (!fp) return;
-    while (fgets(predefinedTags[tagCount], MAX_CATEGORY, fp)) {
-        predefinedTags[tagCount][strcspn(predefinedTags[tagCount], "\n")] = 0;
-        tagCount++;
-        if (tagCount >= MAX_TAGS) break;
-    }
-    fclose(fp);
-}
-
-void deleteTag() {
-    if (tagCount == 0) {
-        printf("\n⚠️  No tags to delete.\n");
-        return;
-    }
-
-    printf("\n🗑️  Existing Tags:\n");
-    for (int i = 0; i < tagCount; i++) {
-        printf("%d. %s\n", i + 1, predefinedTags[i]);
-    }
-    printf("Enter the number of the tag to delete: ");
-    int delIndex;
-    scanf("%d", &delIndex);
-    getchar();
-
-    if (delIndex < 1 || delIndex > tagCount) {
-        printf("❌ Invalid tag number.\n");
-        return;
-    }
-
-    for (int i = delIndex - 1; i < tagCount - 1; i++) {
-        strcpy(predefinedTags[i], predefinedTags[i + 1]);
-    }
-    tagCount--;
-    saveTags();
-    printf("✅ Tag deleted successfully.\n");
-}
-
-void setupTags() {
-    int subChoice;
-    do {
-        printf("\n🔖 Tag Management:\n");
-        printf("1. Add New Tags\n");
-        printf("2. Delete a Tag\n");
-        printf("3. Back to Main Menu\n");
-        printf("Choose an option: ");
-        scanf("%d", &subChoice);
-        getchar();
-
-        if (subChoice == 1) {
-            while (tagCount < MAX_TAGS) {
-                char input[MAX_CATEGORY];
-                printf("Tag %d: ", tagCount + 1);
-                fgets(input, MAX_CATEGORY, stdin);
-                input[strcspn(input, "\n")] = 0;
-                if (strcmp(input, "done") == 0) break;
-                if (findCategoryIndex(predefinedTags, tagCount, input) != -1) {
-                    printf("⚠️  Tag '%s' already exists. Skipping.\n", input);
-                    continue;
-                }
-                strcpy(predefinedTags[tagCount], input);
-                tagCount++;
-            }
-            saveTags();
-            printf("✅ Tags setup complete!\n");
-        } else if (subChoice == 2) {
-            deleteTag();
-        } else if (subChoice != 3) {
-            printf("❓ Invalid choice. Try again.\n");
-        }
-    } while (subChoice != 3);
-}
+char predefinedTags[MAX_TAGS][MAX_CATEGORY];
 
 void addExpense() {
     if (count >= MAX_EXPENSES) {
@@ -122,15 +40,15 @@ void addExpense() {
     }
 
     if (tagCount == 0) {
-        printf("❗ No tags available. Please set up tags first.");
+        printf("No tags available. Please set up tags first.");
         return;
     }
 
-    printf("\n📅 Enter date (YYYY-MM-DD): ");
+    printf("\nEnter date (YYYY-MM-DD): ");
     scanf("%10s", expenses[count].date);
     getchar();
 
-    printf("📂 Choose a tag:\n");
+    printf("Choose a tag:\n");
     for (int i = 0; i < tagCount; i++) {
         printf("%d. %s\n", i + 1, predefinedTags[i]);
     }
@@ -139,37 +57,37 @@ void addExpense() {
     scanf("%d", &tagChoice);
     getchar();
     if (tagChoice < 1 || tagChoice > tagCount) {
-        printf("❌ Invalid tag selection.\n");
+        printf("Invalid tag selection.\n");
         return;
     }
     strcpy(expenses[count].category, predefinedTags[tagChoice - 1]);
 
-    printf("💰 Enter amount: $");
+    printf("Enter amount: $");
     scanf("%f", &expenses[count].amount);
     getchar();
 
-    printf("📝 Enter note (optional): ");
+    printf("Enter note (optional): ");
     fgets(expenses[count].note, MAX_NOTE, stdin);
     expenses[count].note[strcspn(expenses[count].note, "\n")] = 0;
 
     count++;
-    printf("✅ Expense added successfully!\n");
+    printf("Expense added successfully!\n");
 }
 
 void deleteExpense() {
     if (count == 0) {
-        printf("\n📭 No expenses to delete.\n");
+        printf("\nNo expenses to delete.\n");
         return;
     }
 
-    viewExpenses();
+void viewExpenses();
     printf("\nEnter the number of the expense to delete: ");
     int index;
     scanf("%d", &index);
     getchar();
 
     if (index < 1 || index > count) {
-        printf("❌ Invalid expense number.\n");
+        printf("Invalid expense number.\n");
         return;
     }
 
@@ -177,12 +95,12 @@ void deleteExpense() {
         expenses[i] = expenses[i + 1];
     }
     count--;
-    printf("✅ Expense deleted successfully.\n");
+    printf("Expense deleted successfully.\n");
 }
 
 void viewExpenses() {
     if (count == 0) {
-        printf("\n📭 No expenses recorded yet.\n");
+        printf("\nNo expenses recorded yet.\n");
         return;
     }
 
@@ -223,7 +141,7 @@ void viewExpenses() {
 
 void showBarChart() {
     if (count == 0) {
-        printf("\n📭 No expenses to show in bar chart.\n");
+        printf("\nNo expenses to show in bar chart.\n");
         return;
     }
 
@@ -259,7 +177,7 @@ void showBarChart() {
 void saveToFile() {
     FILE *fp = fopen("expenses.txt", "w");
     if (!fp) {
-        printf("\n❌ Error opening file!\n");
+        printf("\nError opening file!\n");
         return;
     }
     for (int i = 0; i < count; i++) {
@@ -267,7 +185,7 @@ void saveToFile() {
                 expenses[i].amount, expenses[i].note);
     }
     fclose(fp);
-    printf("\n💾 Expenses saved to 'expenses.txt'\n");
+    printf("\nExpenses saved to 'expenses.txt'\n");
 }
 
 void loadFromFile() {
@@ -307,8 +225,8 @@ int main() {
             case 3: setupTags(); break;
             case 4: showBarChart(); break;
             case 5: deleteExpense(); break;
-            case 6: saveToFile(); saveTags(); printf("👋 Goodbye!\n"); break;
-            default: printf("❓ Invalid choice. Try again.\n");
+            case 6: saveToFile(); saveTags(); printf("Goodbye!\n"); break;
+            default: printf("Invalid choice. Try again.\n");
         }
     } while (choice != 6);
 
