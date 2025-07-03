@@ -1,4 +1,5 @@
 #include "tags.h"
+#include "expense.h"
 #include <stdio.h>
 #include <string.h>
 void saveTags() {
