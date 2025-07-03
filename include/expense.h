@@ -1,5 +1,5 @@
-#ifndef EXPENSES_H
-#define EXPENSES_H
+#ifndef EXPENSE_H
+#define EXPENSE_H
 #define MAX_EXPENSES 100
 #define MAX_CATEGORY 30
 #define MAX_NOTE 100
@@ -19,4 +19,4 @@ int isValidDate(const char *date);
 void addExpense();
 void viewExpenses();
 void deleteExpense();
-#endif // EXPENSES_H
+#endif // EXPENSE_H
